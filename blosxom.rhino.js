@@ -24,8 +24,37 @@ BlosxomRhino.prototype = {
 		entries.sort(function (a, b) {
 			return b.datetime.valueOf() - a.datetime.valueOf();
 		});
+
+		var path_info = this.getenv("PATH_INFO") || "/intro";
+		if (path_info.match(RegExp("^/(\\d{4})(?:/(\\d\\d)(?:/(\\d\\d))?)?"))) {
+			var year = +RegExp.$1, month = RegExp.$2 - 1, day = +RegExp.$3;
+			entries = entries.filter(function (i) {
+				return [
+					{k:"getFullYear",v:year},
+					{k:"getMonth", v:month},
+					{k:"getDate",v:day}
+				].every(function (j) {
+					// p([j.k, i.datetime[j.k](), j.v]);
+					return (j.v <= 0) || i.datetime[j.k]() == j.v
+				});
+			});
+		} else {
+			try {
+				entries = entries.filter(function (i) {
+					if (i.name == path_info) throw ["only-match", i];
+					return RegExp("^"+path_info).test(i.name);
+				});
+			} catch (e) {
+				if (e[0] != "only-match") throw e;
+				// only match
+				entries = [e[1]];
+			}
+		}
+
+
 		var template = new EJS(this._readLines("template.html").join("\n"));
-		// p(entries);
+//		p(entries);
+//		return;
 
 		System.out.println(template.run({
 			title       : this.config.title,
@@ -82,7 +111,7 @@ BlosxomRhino.prototype = {
 	},
 
 	getenv : function (name) {
-		return String(System.getenv(name));
+		return String(System.getenv(name) || "");
 	},
 };
 
@@ -113,6 +142,6 @@ BlosxomRhino.prototype = {
 //p(entries);
 
 new BlosxomRhino({
-	title    : "Blosxo.Rhino!",
+	title    : "Blosxom.Rhino!",
 	data_dir : "data",
 }).run();
