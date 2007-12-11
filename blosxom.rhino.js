@@ -24,8 +24,8 @@ BlosxomRhino.prototype = {
 		entries.sort(function (a, b) {
 			return b.datetime.valueOf() - a.datetime.valueOf();
 		});
-
-		var path_info = this.getenv("PATH_INFO") || "/";
+		(this.getenv("PATH_INFO") || "/").match(/(.+?)(\.[^.]+)?$/);
+		var path_info = RegExp.$1, flavour = RegExp.$2 || this.config.default_flavour;
 		if (path_info.match(RegExp("^/(\\d{4})(?:/(\\d\\d)(?:/(\\d\\d))?)?"))) {
 			var year = +RegExp.$1, month = RegExp.$2 - 1, day = +RegExp.$3;
 			entries = entries.filter(function (i) {
@@ -51,7 +51,7 @@ BlosxomRhino.prototype = {
 		}
 
 
-		var template = new EJS(this._readLines("template.html").join("\n"));
+		var template = new EJS(this._readLines("template"+flavour).join("\n"));
 		System.out.println(template.run({
 			title       : this.config.title,
 			author      : this.config.author,
@@ -109,6 +109,7 @@ BlosxomRhino.prototype = {
 };
 
 new BlosxomRhino({
-	title    : "Blosxom.Rhino!",
-	data_dir : "data",
+	title           : "Blosxom.Rhino!",
+	data_dir        : "data",
+	default_flavour : ".html",
 }).run();
