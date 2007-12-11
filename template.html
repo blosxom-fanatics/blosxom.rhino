@@ -149,7 +149,7 @@ Content-Type: text/html; charset=utf-8
 					</div>
 					<dl class="information">
 						<dt>DateTime</dt>
-						<dd><%= entry.time.strftime("%Y-%m-%dT%H:%M:%S") %></dd>
+						<dd><%= entry.datetime.toString() %></dd>
 						<dt>Path</dt>
 						<dd><a href="<%= home %><%= entry.name %>"><%= entry.name %></a></dd>
 					</dl>

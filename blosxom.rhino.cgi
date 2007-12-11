@@ -12,6 +12,7 @@ function p (msg) {
 importPackage(java.lang);
 importPackage(java.io);
 
+load("ejs.js");
 
 BlosxomRhino = function (config) { this.initialize(config) };
 BlosxomRhino.prototype = {
@@ -24,7 +25,17 @@ BlosxomRhino.prototype = {
 		entries.sort(function (a, b) {
 			return b.datetime.valueOf() - a.datetime.valueOf();
 		});
-		p(entries);
+		var template = new EJS(this._readLines("template.html").join("\n"));
+		// p(entries);
+
+		print(template.run({
+			title       : this.config.title,
+			author      : this.config.author,
+			home        : this.getenv("SCRIPT_NAME") || '/',
+			path        : (this.getenv("SCRIPT_NAME") || '/').split("/").slice(-1)[0],
+			server_root : "http://" + this.getenv("SERVER_NAME"),
+			entries     : entries,
+		}));
 	},
 
 	getEntries : function () {
@@ -41,22 +52,10 @@ BlosxomRhino.prototype = {
 			return ret;
 		}
 
-		function _readLines(file) {
-			var br = new BufferedReader(
-				new InputStreamReader(
-					new FileInputStream(file),
-					"UTF-8"
-				)
-			);
-			var ret = [];
-			while (br.ready()) ret.push(br.readLine());
-			return ret;
-		}
-
 		var self = this;
 		var files = _getFiles(File(self.config.data_dir));
 		var entries = files.map(function (i) {
-			var content = _readLines(i);
+			var content = self._readLines(i);
 			return {
 				file     : i,
 				name     : String(i).replace(RegExp("^"+self.config.data_dir+"|\\..*$", "g"), ""),
@@ -66,12 +65,28 @@ BlosxomRhino.prototype = {
 			};
 		});
 		return entries;
-	}
+	},
+
+	_readLines : function (file) {
+		var br = new BufferedReader(
+			new InputStreamReader(
+				new FileInputStream(file),
+				"UTF-8"
+			)
+		);
+		var ret = [];
+		while (br.ready()) ret.push(br.readLine());
+		return ret;
+	},
+
+	getenv : function (name) {
+		return String(System.getenv(name));
+	},
 };
 
-print("Content-Type: text/plain");
-print("");
-p(String(System.getenv("USER")));
+//print("Content-Type: text/plain");
+//print("");
+//p(String(System.getenv("USER")));
 
 
 //var files = File(Config.data_dir).listFiles(
@@ -96,5 +111,6 @@ p(String(System.getenv("USER")));
 //p(entries);
 
 new BlosxomRhino({
-	data_dir : "data"
+	title    : "Blosxo.Rhino!",
+	data_dir : "data",
 }).run();

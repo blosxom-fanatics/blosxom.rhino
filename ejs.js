@@ -5,7 +5,7 @@ EJS.prototype = {
 	initialize : function (template) {
 		this.template  = template;
 		this.processor = this.compile(template);
-		print(this.processor);
+		// print(this.processor);
 	},
 
 	run : function (stash) {
@@ -32,7 +32,7 @@ EJS.prototype = {
 				case "==":
 					ret.push('ret.push(EJS.escape(', c,'));');
 					break;
-				case "R":
+				case "=R":
 					ret.push('ret.push(', c,');');
 					break;
 				default:
@@ -53,6 +53,7 @@ EJS.escape = function (str) {
 	});
 };
 
+/*
 importPackage(java.io);
 function _readLines(file) {
 	var br = new BufferedReader(
@@ -73,3 +74,4 @@ var r = new EJS(_readLines(File("template.html")).join("\n")).run({
 });
 
 print(r);
+*/
