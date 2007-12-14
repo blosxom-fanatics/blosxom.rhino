@@ -49,7 +49,7 @@ EJS.prototype = {
 EJS.escape = function (str) {
 	var map = { "&" : "&amp;", "<" : "&lt;" , ">" : "&gt;"};
 	return str.replace(/[&<>]/g, function (m) {
-		return map(m);
+		return map[m];
 	});
 };
 
