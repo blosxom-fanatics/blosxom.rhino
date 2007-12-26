@@ -15,7 +15,7 @@ EJS.prototype = {
 	compile : function (s, opts) {
 		s = String(s);
 		ret = [
-			'var ret = [], escapeHTML = EJS.escapeHTML;',
+			'var ret = [];',
 			'ret.push(""'
 		];
 
@@ -30,7 +30,7 @@ EJS.prototype = {
 			switch (flag) {
 				case "=":
 				case "==":
-					ret.push(', escapeHTML(', c,')');
+					ret.push(', (', c,').replace(/[&<>]/g, f)');
 					break;
 				case "===":
 					ret.push(',', c);
@@ -48,17 +48,14 @@ EJS.prototype = {
 			ret.unshift("with (s) {");
 			ret.push("}");
 		}
-		return new Function("s", ret.join(''));
+		ret.unshift(
+			'var map = { "&" : "&amp;", "<" : "&lt;" , ">" : "&gt;"}, f = function (m) {return map[m]};',
+			"return function (s) {"
+		);
+		ret.push("}");
+		return (new Function(ret.join(''))).call();
 	}
 };
-EJS.escapeHTML = (function () {
-	var map = { "&" : "&amp;", "<" : "&lt;" , ">" : "&gt;"};
-	return function (str) {
-		return str.replace(/[&<>]/g, function (m) {
-			return map[m];
-		});
-	};
-})();
 
 
 //---
