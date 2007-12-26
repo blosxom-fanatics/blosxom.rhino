@@ -51,7 +51,7 @@ BlosxomRhino.prototype = {
 		}
 
 
-		var template = new EJS(this._readLines("template"+flavour).join("\n"));
+		var template = new EJS(this._readLines("template"+flavour).join("\n"), {useWith:true});
 		System.out.println(template.run({
 			title       : this.config.title,
 			author      : this.config.author,
