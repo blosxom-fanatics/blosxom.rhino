@@ -1,6 +1,6 @@
 #!rhino
 
-EJS = function (template) { this.initialize(template) };
+EJS = function (template) { return (this instanceof EJS) ? this.initialize(template) : new EJS(template) };
 EJS.prototype = {
 	initialize : function (template) {
 		this.template  = template;
@@ -20,7 +20,7 @@ EJS.prototype = {
 		];
 
 		var m, c;
-		while (m = s.match(/<%([^\s]*)/)) {
+		while (m = s.match(/<%(=*)/)) {
 			var flag = m[1];
 			ret.push('ret.push(', uneval(s.slice(0, m.index)), ');');
 			s = s.slice(m.index + m[0].length);
@@ -32,7 +32,7 @@ EJS.prototype = {
 				case "==":
 					ret.push('ret.push(EJS.escape(', c,'));');
 					break;
-				case "=R":
+				case "===":
 					ret.push('ret.push(', c,');');
 					break;
 				default:
@@ -46,12 +46,17 @@ EJS.prototype = {
 		return new Function("stash", ret.join(''));
 	}
 };
+EJS.escapeMap ={ "&" : "&amp;", "<" : "&lt;" , ">" : "&gt;"};
 EJS.escape = function (str) {
-	var map = { "&" : "&amp;", "<" : "&lt;" , ">" : "&gt;"};
 	return str.replace(/[&<>]/g, function (m) {
-		return map[m];
+		return EJS.escapeMap[m];
 	});
 };
+
+//var t = EJS("aaaa<%=foo%>bbbbb<%=bar%>ccc");
+//
+//print(t.processor);
+//print(t.run({foo:"test", bar:"foobar"}));
 
 /*
 importPackage(java.io);
