@@ -4,7 +4,8 @@ EJS = function (template, opts) { return (this instanceof EJS) ? this.initialize
 EJS.prototype = {
 	initialize : function (template, opts) {
 		this.template  = template;
-		this.processor = this.compile(template, opts || {});
+		this.generator = this.compile(template, opts || {});
+		this.processor = this.generator();
 		// print(this.processor);
 	},
 
@@ -53,7 +54,7 @@ EJS.prototype = {
 			"return function (s) {"
 		);
 		ret.push("}");
-		return (new Function(ret.join(''))).call();
+		return new Function(ret.join(''));
 	}
 };
 
@@ -67,7 +68,7 @@ EJS.prototype = {
 //
 //for (var i = 0; i < tester.length; i++) {
 //	var t = EJS(tester[i], {useWith: true});
-//	print(t.processor);
+//	print(t.generator);
 //	print(t.run({foo:"test", bar:"foobar"}));
 //}
 //
@@ -88,7 +89,7 @@ EJS.prototype = {
 //		f.run(m);
 //	},
 //	function replace () {
-//		t.replace(/<%=s\.(\w+)%>/, function (_,a) {
+//		t.replace(/<%=s\.(\w+)%>/g, function (_,a) {
 //			return m[a];
 //		});
 //	}
