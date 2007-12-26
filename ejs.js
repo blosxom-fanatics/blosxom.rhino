@@ -15,14 +15,15 @@ EJS.prototype = {
 	compile : function (s) {
 		s = String(s);
 		ret = [
+			'var ret = [], escapeHTML = (', uneval(EJS.escapeFun), ")();",
 			'with (stash) {',
-			'var ret = [];'
+			'ret.push(""'
 		];
 
 		var m, c;
 		while (m = s.match(/<%(=*)/)) {
 			var flag = m[1];
-			ret.push('ret.push(', uneval(s.slice(0, m.index)), ');');
+			ret.push(',', uneval(s.slice(0, m.index)));
 			s = s.slice(m.index + m[0].length);
 			m = s.match(/(.*?)%>/);
 			s = s.slice(m.index + m[0].length);
@@ -30,53 +31,59 @@ EJS.prototype = {
 			switch (flag) {
 				case "=":
 				case "==":
-					ret.push('ret.push(EJS.escape(', c,'));');
+					ret.push(', escapeHTML(', c,')');
 					break;
 				case "===":
-					ret.push('ret.push(', c,');');
+					ret.push(',', c);
 					break;
 				default:
-					ret.push(c, "\n");
+					ret.push(");", c, "\nret.push(''");
 					break;
 			}
 		}
-		ret.push('ret.push(', uneval(s), ');');
+		ret.push(',', uneval(s), ');');
 
 		ret.push('return ret.join("") }');
 		return new Function("stash", ret.join(''));
 	}
 };
-EJS.escapeMap ={ "&" : "&amp;", "<" : "&lt;" , ">" : "&gt;"};
-EJS.escape = function (str) {
-	return str.replace(/[&<>]/g, function (m) {
-		return EJS.escapeMap[m];
-	});
+EJS.escapeFun = function () {
+	var map = { "&" : "&amp;", "<" : "&lt;" , ">" : "&gt;"};
+	return function (str) {
+		return str.replace(/[&<>]/g, function (m) {
+			return map[m];
+		});
+	};
 };
 
-//var t = EJS("aaaa<%=foo%>bbbbb<%=bar%>ccc");
+//[
+//	"aaaa<%=foo%>bbbbb<%=bar%>ccc",
+//	"aaaa<% if (foo) {%>bbbb<%=bar%><%}%>ccc",
+//].forEach(function (i) {
+//	var t = EJS(i);
+//	print(t.processor);
+//	print(t.run({foo:"test", bar:"foobar"}));
+//});
+
+//importPackage(java.io);
+//function _readLines(file) {
+//	var br = new BufferedReader(
+//		new InputStreamReader(
+//			new FileInputStream(file),
+//			"UTF-8"
+//		)
+//	);
+//	var ret = [];
+//	while (br.ready()) ret.push(br.readLine());
+//	return ret;
+//}
+//var t = new EJS(_readLines(File("template.html")).join("\n"));
+//var r = t.run({
+//	title : "test",
+//	home  : "/",
+//	entries : [
+//	],
+//});
 //
+//print(r);
 //print(t.processor);
-//print(t.run({foo:"test", bar:"foobar"}));
-
-/*
-importPackage(java.io);
-function _readLines(file) {
-	var br = new BufferedReader(
-		new InputStreamReader(
-			new FileInputStream(file),
-			"UTF-8"
-		)
-	);
-	var ret = [];
-	while (br.ready()) ret.push(br.readLine());
-	return ret;
-}
-var r = new EJS(_readLines(File("template.html")).join("\n")).run({
-	title : "test",
-	home  : "/",
-	entries : [
-	],
-});
-
-print(r);
-*/
